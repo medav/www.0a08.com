@@ -29,8 +29,18 @@ app.get('/:id?', function(req, res) {
     if (id == directory.length - 1) {
         next_link = ""
     }
+
+    var html = ""
+
+    if (/mobile/i.test(req.headers['user-agent'])) {
+        console.log("mobile")
+        html = fs.readFileSync('html/index.mobile.html', {encoding: 'utf-8'});
+    }
+    else {
+        console.log("desktop")
+        html = fs.readFileSync('html/index.html', {encoding: 'utf-8'});
+    }
     
-    var html = fs.readFileSync('html/index.html', {encoding: 'utf-8'});
     html = html
         .replace("{{image-title}}", image_title)
         .replace("{{image-name}}", image_name)
