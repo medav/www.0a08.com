@@ -3,12 +3,21 @@ var http = require('http').Server(app);
 var fs = require('fs');
 var path = require('path');
 
+function RandomInt(max) {
+    return Math.floor(Math.random() * Math.floor(max));
+}
+
 app.get('/:id?', function(req, res) {
     directory = JSON.parse(fs.readFileSync('directory.json'));
     var id = directory.length - 1
 
     if (req.params['id'] != null) {
-        id = parseInt(req.params['id'])
+        if (req.params['id'] == 'random') {
+            id = RandomInt(directory.length)
+        }
+        else {
+            id = parseInt(req.params['id'])
+        }
     }
 
     if (id < 0 || id >= directory.length) {
@@ -33,11 +42,9 @@ app.get('/:id?', function(req, res) {
     var html = ""
 
     if (/mobile/i.test(req.headers['user-agent'])) {
-        console.log("mobile")
         html = fs.readFileSync('html/index.mobile.html', {encoding: 'utf-8'});
     }
     else {
-        console.log("desktop")
         html = fs.readFileSync('html/index.html', {encoding: 'utf-8'});
     }
     
