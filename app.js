@@ -7,17 +7,12 @@ function RandomInt(max) {
     return Math.floor(Math.random() * Math.floor(max));
 }
 
-app.get('/:id?', function(req, res) {
-    directory = JSON.parse(fs.readFileSync('directory.json'));
+app.get('/:id(\\d+)?', function(req, res) {
+    var directory = JSON.parse(fs.readFileSync('directory.json'));
     var id = directory.length - 1
 
     if (req.params['id'] != null) {
-        if (req.params['id'] == 'random') {
-            id = RandomInt(directory.length)
-        }
-        else {
-            id = parseInt(req.params['id'])
-        }
+        id = parseInt(req.params['id'])
     }
 
     if (id < 0 || id >= directory.length) {
@@ -71,6 +66,12 @@ app.get('/:id?', function(req, res) {
         .replace(/{{btn-type}}/g, btn_type)
 
     res.send(html)
+});
+
+app.get('/random', function(req, res) {
+    var directory = JSON.parse(fs.readFileSync('directory.json'));
+    var id = RandomInt(directory.length)
+    res.redirect('/' + id)
 });
 
 app.get('/images/*.*', function(req, res) {
