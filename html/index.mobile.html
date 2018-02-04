@@ -37,22 +37,24 @@
 
     <div class="row">
         <div class="col">
-            <img class="rounded" src="images/{{image-name}}" title="{{image-text}}" style="border: black 1px solid; width: 100%">
+            <img class="rounded" src="images/{{image-name}}" title="{{image-text}}" style="{{image-style}}">
         </div>
     </div>
 
     <div class="row" style="height: 2vh"></div>
 
     <div class="row">
-        <div class="col-2"><a href="0" role="button" class="btn btn-primary btn-block">|<</a></div>
-        <div class="col-2"><a href="{{prev-link}}" role="button" class="btn btn-primary btn-block"><</a></div>
+        <div class="col-2"><a href="0" role="button" class="btn {{btn-type}} btn-block">|<</a></div>
+        <div class="col-2"><a href="{{prev-link}}" role="button" class="btn {{btn-type}} btn-block"><</a></div>
 
-        <div class="col-4"><a href="/random" role="button" class="btn btn-primary btn-block">Random</a></div>
+        <div class="col-4"><a href="/random" role="button" class="btn {{btn-type}} btn-block">Random</a></div>
 
         <!-- <div class="col-2"></div> -->
-        <div class="col-2"><a href="{{next-link}}" role="button" class="btn btn-primary btn-block">></a></div>
-        <div class="col-2"><a href="/" role="button" class="btn btn-primary btn-block">>|</a></div>
+        <div class="col-2"><a href="{{next-link}}" role="button" class="btn {{btn-type}} btn-block">></a></div>
+        <div class="col-2"><a href="/" role="button" class="btn {{btn-type}} btn-block">>|</a></div>
     </div>
+
+    <div class="row" style="height: 5vh"></div>
 
 </div>
 

@@ -28,8 +28,21 @@ app.get('/:id?', function(req, res) {
     var image_title = meta['title']
     var image_name = meta['image_name']
     var image_text = meta['alttext']
+    var image_style = "width: 100%;"
+    var btn_type = "btn-primary"
     var prev_link = id - 1
     var next_link = id + 1
+
+    if (meta['border']) {
+        image_style += "border: black 1px solid;"
+    }
+
+    if (meta['type'] == 'heart') {
+        btn_type = 'btn-danger'
+    }
+    else if (meta['type'] == 'life') {
+        btn_type = 'btn-success'
+    }
 
     if (id == 0) {
         prev_link = ""
@@ -49,11 +62,13 @@ app.get('/:id?', function(req, res) {
     }
     
     html = html
-        .replace("{{image-title}}", image_title)
-        .replace("{{image-name}}", image_name)
-        .replace("{{image-text}}", image_text)
-        .replace("{{prev-link}}", prev_link)
-        .replace("{{next-link}}", next_link)
+        .replace(/{{image-title}}/g, image_title)
+        .replace(/{{image-name}}/g, image_name)
+        .replace(/{{image-text}}/g, image_text)
+        .replace(/{{prev-link}}/g, prev_link)
+        .replace(/{{next-link}}/g, next_link)
+        .replace(/{{image-style}}/g, image_style)
+        .replace(/{{btn-type}}/g, btn_type)
 
     res.send(html)
 });
