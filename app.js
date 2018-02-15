@@ -3,6 +3,8 @@ var http = require('http').Server(app);
 var fs = require('fs');
 var path = require('path');
 
+app.enable('trust proxy')
+
 function RandomInt(max) {
     return Math.floor(Math.random() * Math.floor(max));
 }
@@ -18,6 +20,11 @@ app.get('/:id(\\d+)?', function(req, res) {
     if (id < 0 || id >= directory.length) {
         id = directory.length - 1
     }
+
+    var log_msg = Date.now() + ',' + req.ip + ',' + id +  '\n'
+    fs.appendFile('log.csv', log_msg, function(err) {
+
+    })
 
     var meta = directory[id]
     var image_title = meta['title']
