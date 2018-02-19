@@ -3,7 +3,7 @@ var http = require('http').Server(app);
 var fs = require('fs');
 var path = require('path');
 
-app.enable('trust proxy')
+//app.enable('trust proxy')
 
 function RandomInt(max) {
     return Math.floor(Math.random() * Math.floor(max));
@@ -21,7 +21,8 @@ app.get('/:id(\\d+)?', function(req, res) {
         id = directory.length - 1
     }
 
-    var log_msg = Date.now() + ',' + req.ip + ',' + id +  '\n'
+    var ip_addr = req.headers['x-real-ip'] || req.connection.remoteAddress
+    var log_msg = (new Date()).toISOString() + ',' + ip_addr + ',' + id +  '\n'
     fs.appendFile('log.csv', log_msg, function(err) {
 
     })
