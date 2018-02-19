@@ -9,6 +9,18 @@ function RandomInt(max) {
     return Math.floor(Math.random() * Math.floor(max));
 }
 
+function DateStringCsv() {
+    var date = new Date()
+    var day = date.getDate()
+    var month = date.getMonth() + 1
+    var year = date.getFullYear()
+    var hour = date.getHours()
+    var minute = date.getMinutes()
+    var second = date.getSeconds()
+    
+    return year + ',' + month + ',' + day + ',' + hour + ',' + minute + ',' + second
+}
+
 app.get('/:id(\\d+)?', function(req, res) {
     var directory = JSON.parse(fs.readFileSync('directory.json'));
     var id = directory.length - 1
@@ -22,7 +34,7 @@ app.get('/:id(\\d+)?', function(req, res) {
     }
 
     var ip_addr = req.headers['x-real-ip'] || req.connection.remoteAddress
-    var log_msg = (new Date()).toISOString() + ',' + ip_addr + ',' + id +  '\n'
+    var log_msg = DateStringCsv() + ',' + ip_addr + ',' + id +  '\n'
     fs.appendFile('log.csv', log_msg, function(err) {
 
     })
