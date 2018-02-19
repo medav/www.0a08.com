@@ -2,6 +2,7 @@ var app = require('express')();
 var http = require('http').Server(app);
 var fs = require('fs');
 var path = require('path');
+var request = require("request");
 
 //app.enable('trust proxy')
 
@@ -21,6 +22,19 @@ function DateStringCsv() {
     return year + ',' + month + ',' + day + ',' + hour + ',' + minute + ',' + second
 }
 
+function LocationStringCsv(location_info) {
+    var country_code = location_info['data']['geo']['country_code']
+    var region = location_info['data']['geo']['region']
+    var city = location_info['data']['geo']['city']
+    var postal_code = location_info['data']['geo']['postal_code']
+
+    return country_code + ',' + region + ',' + city + ',' + postal_code
+}
+
+function LocationOfIp(ip_addr, callback) {
+    request('https://tools.keycdn.com/geo.json?host=' + ip_addr, callback)
+}
+
 app.get('/:id(\\d+)?', function(req, res) {
     var directory = JSON.parse(fs.readFileSync('directory.json'));
     var id = directory.length - 1
@@ -34,9 +48,15 @@ app.get('/:id(\\d+)?', function(req, res) {
     }
 
     var ip_addr = req.headers['x-real-ip'] || req.connection.remoteAddress
-    var log_msg = DateStringCsv() + ',' + ip_addr + ',' + id +  '\n'
-    fs.appendFile('log.csv', log_msg, function(err) {
+    
+    LocationOfIp(ip_addr, function(error, response, body) {
+        var location_info = JSON.parse(body)
 
+        var log_msg = DateStringCsv() + ',' + ip_addr + ',' + LocationStringCsv(location_info) + ',' + id +  '\n'
+
+        fs.appendFile('log.csv', log_msg, function(err) {
+
+        })
     })
 
     var meta = directory[id]
