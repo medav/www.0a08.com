@@ -61,11 +61,17 @@ app.get('/:id(\\d+)?', function(req, res) {
 
     var comic = JSON.parse(fs.readFileSync('comics/' + id + '.json'))
     
-    while (comic['skip']) {
-        id++
+    if (comic['skip']) {
+        while (comic['skip']) {
+            id++
 
-        comic = JSON.parse(fs.readFileSync('comics/' + id + '.json'))
-        if (id == directory['head']) break
+            comic = JSON.parse(fs.readFileSync('comics/' + id + '.json'))
+            if (id == directory['head']) break
+        }
+
+        res.redirect('/' + id)
+
+        return
     }
 
     var ip_addr = req.headers['x-real-ip'] || req.connection.remoteAddress
