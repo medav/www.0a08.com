@@ -23,6 +23,10 @@ function DateStringCsv() {
 }
 
 function LocationStringCsv(location_info) {
+    if (location_info == null) {
+        return 'error,error,error,error'
+    }
+
     var country_code = location_info['data']['geo']['country_code']
     var region = location_info['data']['geo']['region']
     var city = location_info['data']['geo']['city']
@@ -34,6 +38,10 @@ function LocationStringCsv(location_info) {
 function LocationOfIp(ip_addr, callback) {
     request('https://tools.keycdn.com/geo.json?host=' + ip_addr, callback)
 }
+
+app.get('/robots.txt', function(req, res) {
+    res.send("User-agent: *\nDisallow: /")
+})
 
 app.get('/:id(\\d+)?', function(req, res) {
     var directory = JSON.parse(fs.readFileSync('directory.json'));
@@ -50,7 +58,13 @@ app.get('/:id(\\d+)?', function(req, res) {
     var ip_addr = req.headers['x-real-ip'] || req.connection.remoteAddress
     
     LocationOfIp(ip_addr, function(error, response, body) {
-        var location_info = JSON.parse(body)
+        var location_info
+        try {
+            location_info = JSON.parse(body)
+        }
+        catch (err) {
+            location_info = null
+        }
 
         var log_msg = DateStringCsv() + ',' + ip_addr + ',' + LocationStringCsv(location_info) + ',' + id +  '\n'
 
