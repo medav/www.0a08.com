@@ -43,8 +43,46 @@ app.get('/robots.txt', function(req, res) {
     res.send("User-agent: *\nDisallow: /")
 })
 
+var directory = null
+
+function SkipSearch(id, comic, reverse) {
+    while (comic['skip'] && id > 0) {
+        if (reverse) {
+            id--
+        }
+        else {
+            id++
+        }
+
+        comic = JSON.parse(fs.readFileSync('comics/' + id + '.json'))
+        if (id == directory['head']) break
+    }
+
+    return [id, comic]
+}
+
+function ComputePrevious(id) {
+    id--
+    var comic = JSON.parse(fs.readFileSync('comics/' + id + '.json'))
+    if (comic['skip']) {
+        result = SkipSearch(id, comic, true)
+        id = result[0]
+    }
+    return id
+}
+
+function ComputeNext(id) {
+    id++
+    var comic = JSON.parse(fs.readFileSync('comics/' + id + '.json'))
+    if (comic['skip']) {
+        result = SkipSearch(id, comic, false)
+        id = result[0]
+    }
+    return id
+}
+
 app.get('/:id(\\d+)?', function(req, res) {
-    var directory = JSON.parse(fs.readFileSync('directory.json'))
+    directory = JSON.parse(fs.readFileSync('directory.json'))
     var id = directory['head']
 
     if (req.params['id'] != null) {
@@ -62,15 +100,8 @@ app.get('/:id(\\d+)?', function(req, res) {
     var comic = JSON.parse(fs.readFileSync('comics/' + id + '.json'))
     
     if (comic['skip']) {
-        while (comic['skip']) {
-            id++
-
-            comic = JSON.parse(fs.readFileSync('comics/' + id + '.json'))
-            if (id == directory['head']) break
-        }
-
-        res.redirect('/' + id)
-
+        result = SkipSearch(id, comic, false)
+        res.redirect('/' + result[0])
         return
     }
 
@@ -98,8 +129,8 @@ app.get('/:id(\\d+)?', function(req, res) {
     var image_style = "width: 100%;"
     var btn_type = "btn-primary"
     var tail_link = directory['tail']
-    var prev_link = id - 1
-    var next_link = id + 1
+    var prev_link = ComputePrevious(id)
+    var next_link = ComputeNext(id)
 
     if (comic['border']) {
         image_style += "border: black 1px solid;"
