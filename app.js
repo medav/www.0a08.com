@@ -44,15 +44,28 @@ app.get('/robots.txt', function(req, res) {
 })
 
 app.get('/:id(\\d+)?', function(req, res) {
-    var directory = JSON.parse(fs.readFileSync('directory.json'));
-    var id = directory.length - 1
+    var directory = JSON.parse(fs.readFileSync('directory.json'))
+    var id = directory['head']
 
     if (req.params['id'] != null) {
         id = parseInt(req.params['id'])
     }
 
-    if (id < 0 || id >= directory.length) {
-        id = directory.length - 1
+    if (id < 0 || id > directory['head']) {
+        id = directory['head']
+    }
+
+    if (!fs.existsSync('comics/' + id + '.json')) {
+        id = directory['head']
+    }
+
+    var comic = JSON.parse(fs.readFileSync('comics/' + id + '.json'))
+    
+    while (comic['skip']) {
+        id++
+
+        comic = JSON.parse(fs.readFileSync('comics/' + id + '.json'))
+        if (id == directory['head']) break
     }
 
     var ip_addr = req.headers['x-real-ip'] || req.connection.remoteAddress
@@ -73,23 +86,23 @@ app.get('/:id(\\d+)?', function(req, res) {
         })
     })
 
-    var meta = directory[id]
-    var image_title = meta['title']
-    var image_name = meta['image_name']
-    var image_text = meta['alttext']
+    var image_title = comic['title']
+    var image_name = comic['image_name']
+    var image_text = comic['mouseover']
     var image_style = "width: 100%;"
     var btn_type = "btn-primary"
+    var tail_link = directory['tail']
     var prev_link = id - 1
     var next_link = id + 1
 
-    if (meta['border']) {
+    if (comic['border']) {
         image_style += "border: black 1px solid;"
     }
 
-    if (meta['type'] == 'heart') {
+    if (comic['type'] == 'heart') {
         btn_type = 'btn-danger'
     }
-    else if (meta['type'] == 'life') {
+    else if (comic['type'] == 'life') {
         btn_type = 'btn-success'
     }
 
@@ -114,6 +127,7 @@ app.get('/:id(\\d+)?', function(req, res) {
         .replace(/{{image-title}}/g, image_title)
         .replace(/{{image-name}}/g, image_name)
         .replace(/{{image-text}}/g, image_text)
+        .replace(/{{tail-link}}/g, tail_link)
         .replace(/{{prev-link}}/g, prev_link)
         .replace(/{{next-link}}/g, next_link)
         .replace(/{{image-style}}/g, image_style)
