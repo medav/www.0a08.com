@@ -63,6 +63,8 @@ function SkipSearch(id, comic, reverse) {
 
 function ComputePrevious(id) {
     id--
+    if (id <= 0) return 0
+
     var comic = JSON.parse(fs.readFileSync('comics/' + id + '.json'))
     if (comic['skip']) {
         result = SkipSearch(id, comic, true)
@@ -73,6 +75,8 @@ function ComputePrevious(id) {
 
 function ComputeNext(id) {
     id++
+    if (id >= directory['head']) return directory['head']
+    
     var comic = JSON.parse(fs.readFileSync('comics/' + id + '.json'))
     if (comic['skip']) {
         result = SkipSearch(id, comic, false)
