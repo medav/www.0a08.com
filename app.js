@@ -39,9 +39,9 @@ function LocationOfIp(ip_addr, callback) {
     request('https://tools.keycdn.com/geo.json?host=' + ip_addr, callback)
 }
 
-app.get('/robots.txt', function(req, res) {
-    res.send("User-agent: *\nDisallow: /")
-})
+//app.get('/robots.txt', function(req, res) {
+//    res.send("User-agent: *\nDisallow: /")
+//})
 
 var directory = null
 
@@ -178,8 +178,8 @@ app.get('/:id(\\d+)?', function(req, res) {
 });
 
 app.get('/random', function(req, res) {
-    var directory = JSON.parse(fs.readFileSync('directory.json'));
-    var id = RandomInt(directory.length)
+    directory = JSON.parse(fs.readFileSync('directory.json'));
+    var id = RandomInt(directory.head + 1)
     res.redirect('/' + id)
 });
 
