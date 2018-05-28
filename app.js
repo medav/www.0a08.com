@@ -6,6 +6,46 @@ var request = require("request");
 
 //app.enable('trust proxy')
 
+var comics = {}
+var first = 0
+var last = 0
+
+function LoadComics() {
+    files = fs.readdirSync('./comics/')
+
+    var indices = []
+    
+    files.forEach(file => {
+        if (file.endsWith('.json')) {
+            var id = parseInt(file.substr(0, file.length - 5))
+            comics[id] = JSON.parse(fs.readFileSync('comics/' + file))
+            indices.push(id)
+        }
+    });
+
+    indices.sort(function (a, b) { return a -b; })
+    first = indices[0]
+    last = indices[indices.length - 1]
+
+    for (var i = 0; i < indices.length; i++) {
+        if (i == 0) {
+            comics[indices[i]].prev = indices[i]
+        }
+        else {
+            comics[indices[i]].prev = indices[i - 1]
+        }
+
+        if (i == indices.length - 1) {
+            comics[indices[i]].next = indices[i]
+        }
+        else {
+            comics[indices[i]].next = indices[i + 1]
+        }
+    }
+}
+
+LoadComics()
+
 function RandomInt(max) {
     return Math.floor(Math.random() * Math.floor(max));
 }
@@ -35,124 +75,72 @@ function LocationStringCsv(location_info) {
     return country_code + ',' + region + ',' + city + ',' + postal_code
 }
 
+var ip_cache = {}
+
 function LocationOfIp(ip_addr, callback) {
-    request('https://tools.keycdn.com/geo.json?host=' + ip_addr, callback)
-}
+    if (ip_addr in ip_cache && ip_cache[ip_addr] != null) {
+        callback(ip_cache[ip_addr])
+        return
+    }
 
-//app.get('/robots.txt', function(req, res) {
-//    res.send("User-agent: *\nDisallow: /")
-//})
-
-var directory = null
-
-function SkipSearch(id, comic, reverse) {
-    while (comic['skip'] && id > 0) {
-        if (reverse) {
-            id--
+    request('https://tools.keycdn.com/geo.json?host=' + ip_addr, function(error, response, body) {
+        var location_info
+        try {
+            ip_cache[ip_addr] = JSON.parse(body)
+            callback(ip_cache[ip_addr])
         }
-        else {
-            id++
+        catch (err) {
+            ip_cache[ip_addr] = null
+            callback(ip_cache[ip_addr])
         }
-
-        comic = JSON.parse(fs.readFileSync('comics/' + id + '.json'))
-        if (id == directory['head']) break
-    }
-
-    return [id, comic]
-}
-
-function ComputePrevious(id) {
-    id--
-    if (id <= 0) return 0
-
-    var comic = JSON.parse(fs.readFileSync('comics/' + id + '.json'))
-    if (comic['skip']) {
-        result = SkipSearch(id, comic, true)
-        id = result[0]
-    }
-    return id
-}
-
-function ComputeNext(id) {
-    id++
-    if (id >= directory['head']) return directory['head']
-    
-    var comic = JSON.parse(fs.readFileSync('comics/' + id + '.json'))
-    if (comic['skip']) {
-        result = SkipSearch(id, comic, false)
-        id = result[0]
-    }
-    return id
+    })
 }
 
 app.get('/:id(\\d+)?', function(req, res) {
     directory = JSON.parse(fs.readFileSync('directory.json'))
-    var id = directory['head']
+    var id = last
 
     if (req.params['id'] != null) {
         id = parseInt(req.params['id'])
     }
 
-    if (id < 0 || id > directory['head']) {
-        id = directory['head']
+    if (id < 0 || id > last) {
+        id = last
     }
 
-    if (!fs.existsSync('comics/' + id + '.json')) {
-        id = directory['head']
-    }
-
-    var comic = JSON.parse(fs.readFileSync('comics/' + id + '.json'))
-    
-    if (comic['skip']) {
-        result = SkipSearch(id, comic, false)
-        res.redirect('/' + result[0])
+    if (!(id in comics)) {
+        res.redirect('/')
         return
     }
 
     var ip_addr = req.headers['x-real-ip'] || req.connection.remoteAddress
-    
-    LocationOfIp(ip_addr, function(error, response, body) {
-        var location_info
-        try {
-            location_info = JSON.parse(body)
-        }
-        catch (err) {
-            location_info = null
-        }
 
-        var log_msg = DateStringCsv() + ',' + ip_addr + ',' + LocationStringCsv(location_info) + ',' + id +  '\n'
+    LocationOfIp(ip_addr, function(location_info) {
+        var log_msg =
+            DateStringCsv() + ',' +
+            ip_addr + ',' +
+            LocationStringCsv(location_info) + ',' +
+            id +  '\n'
 
-        fs.appendFile('log.csv', log_msg, function(err) {
-
-        })
+        fs.appendFile('log.csv', log_msg, function(err) { })
     })
 
-    var image_title = comic['title']
-    var image_name = comic['image_name']
-    var image_text = comic['mouseover']
+    var comic = comics[id]
+    var image_title = comic.title
+    var image_name = comic.image_name
+    var image_text = comic.mouseover
     var image_style = "width: 100%;"
     var btn_type = "btn-primary"
-    var tail_link = directory['tail']
-    var prev_link = ComputePrevious(id)
-    var next_link = ComputeNext(id)
 
-    if (comic['border']) {
+    if (comic.border) {
         image_style += "border: black 1px solid;"
     }
 
-    if (comic['type'] == 'heart') {
+    if (comic.type == 'heart') {
         btn_type = 'btn-danger'
     }
-    else if (comic['type'] == 'life') {
+    else if (comic.type == 'life') {
         btn_type = 'btn-success'
-    }
-
-    if (id == 0) {
-        prev_link = ""
-    }
-
-    if (id == directory.length - 1) {
-        next_link = ""
     }
 
     var html = ""
@@ -168,9 +156,9 @@ app.get('/:id(\\d+)?', function(req, res) {
         .replace(/{{image-title}}/g, image_title)
         .replace(/{{image-name}}/g, image_name)
         .replace(/{{image-text}}/g, image_text)
-        .replace(/{{tail-link}}/g, tail_link)
-        .replace(/{{prev-link}}/g, prev_link)
-        .replace(/{{next-link}}/g, next_link)
+        .replace(/{{tail-link}}/g, first)
+        .replace(/{{prev-link}}/g, comic.prev)
+        .replace(/{{next-link}}/g, comic.next)
         .replace(/{{image-style}}/g, image_style)
         .replace(/{{btn-type}}/g, btn_type)
 
