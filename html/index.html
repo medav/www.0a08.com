@@ -13,6 +13,15 @@
         crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
         crossorigin="anonymous">
+    <script>
+        window.addEventListener("keydown", function(event) {
+            if (event.key == "ArrowLeft") {
+                document.location = "{{prev-link}}";
+            } else if (event.key == "ArrowRight") {
+                document.location = "{{next-link}}";
+            }
+        }, true);
+    </script>
 </head>
 
 
@@ -49,14 +58,14 @@
             <div class="row" style="height: 2vh"></div>
 
             <div class="row">
-                <div class="col-2"><a href="{{tail-link}}" role="button" class="btn {{btn-type}} btn-block">|<</a></div>
-                <div class="col-2"><a href="{{prev-link}}" role="button" class="btn {{btn-type}} btn-block"><</a></div>
+                <div class="col-2"><a href="{{tail-link}}" role="button" class="btn {{btn-type}} btn-block">|&lt;</a></div>
+                <div class="col-2"><a href="{{prev-link}}" role="button" class="btn {{btn-type}} btn-block">&lt;</a></div>
 
                 <div class="col-4"><a href="/random" role="button" class="btn {{btn-type}} btn-block">Random</a></div>
 
                 <!-- <div class="col-2"></div> -->
-                <div class="col-2"><a href="{{next-link}}" role="button" class="btn {{btn-type}} btn-block">></a></div>
-                <div class="col-2"><a href="/" role="button" class="btn {{btn-type}} btn-block">>|</a></div>
+                <div class="col-2"><a href="{{next-link}}" role="button" class="btn {{btn-type}} btn-block">&gt;</a></div>
+                <div class="col-2"><a href="/" role="button" class="btn {{btn-type}} btn-block">&gt;|</a></div>
             </div>
 
         </div>
