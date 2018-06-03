@@ -14,6 +14,16 @@
         crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
         crossorigin="anonymous">
+    <script>
+        function show_mouseover() {
+            var p = document.createElement("p");
+            var node = document.createTextNode("{{image-text}}");
+            p.appendChild(node);
+            
+            var element = document.getElementById("mouseover_div");
+            element.appendChild(p);
+        }
+    </script>
 </head>
 
 
@@ -39,7 +49,8 @@
 
     <div class="row">
         <div class="col">
-            <img class="rounded" src="images/{{image-name}}" title="{{image-text}}" style="{{image-style}}">
+            <img class="rounded" src="images/{{image-name}}" title="{{image-text}}" style="{{image-style}}" onclick="show_mouseover()">
+            <div id="mouseover_div"></div>
         </div>
     </div>
 
