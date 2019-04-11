@@ -9,11 +9,12 @@ var request = require("request");
 var comics = {}
 var first = 0
 var last = 0
+var indices = []
 
 function LoadComics() {
     files = fs.readdirSync('./comics/')
 
-    var indices = []
+    indices = []
     
     files.forEach(file => {
         if (file.endsWith('.json')) {
@@ -68,7 +69,7 @@ function LocationStringCsv(location_info) {
     }
 
     var country_code = location_info['data']['geo']['country_code']
-    var region = location_info['data']['geo']['region']
+    var region = location_info['data']['geo']['region_code']
     var city = location_info['data']['geo']['city']
     var postal_code = location_info['data']['geo']['postal_code']
 
@@ -167,8 +168,19 @@ app.get('/:id(\\d+)?', function(req, res) {
 
 app.get('/random', function(req, res) {
     directory = JSON.parse(fs.readFileSync('directory.json'));
-    var id = RandomInt(directory.head + 1)
-    res.redirect('/' + id)
+    var index = RandomInt(indices.length)
+    var ip_addr = req.headers['x-real-ip'] || req.connection.remoteAddress
+
+    LocationOfIp(ip_addr, function(location_info) {
+        var log_msg =
+            DateStringCsv() + ',' +
+            ip_addr + ',' +
+            LocationStringCsv(location_info) + ',' +
+            'random\n'
+
+        fs.appendFile('log.csv', log_msg, function(err) { })
+    })
+    res.redirect('/' + indices[index])
 });
 
 app.get('/images/*.*', function(req, res) {
